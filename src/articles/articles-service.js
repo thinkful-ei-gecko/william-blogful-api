@@ -27,7 +27,7 @@ const ArticlesService = {
     return knexInstance('blogful_articles')
       .where({ id })
       .update(newArticleFields);
-  },
+  }
 };
 
 module.exports = ArticlesService;

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const xss = require('xss');
 const ArticlesService = require('./articles-service');
 
@@ -34,7 +35,7 @@ articlesRouter
 
     ArticlesService.insertArticle(db,newArticle)
       .then(article => {
-        res.status(201).location(`/articles/${article.id}`).json({
+        res.status(201).location(path.posix.join(req.originalUrl + `/${article.id}`)).json({
           id: article.id,
           title: xss(article.title),
           style: article.style,
@@ -53,7 +54,7 @@ articlesRouter
     ArticlesService.getById(knexInstance,id)
       .then(article => {
         if(!article) {
-          return res.status(404).json({error: {message: 'Articles does not exist'}});
+          return res.status(404).json({error: {message: 'Article does not exist'}});
         }
         res.article = article;
         next();
@@ -75,6 +76,23 @@ articlesRouter
     ArticlesService.deleteArticle(knexInstance, id)
       .then(() => {
         res.status(204).end();
+      })
+      .catch(next);
+  })
+  .patch(jsonParser, (req,res,next) => {
+    const { title, content, style } = req.body;
+    const articleToUpdate = { title, content, style };
+    const db = req.app.get('db');
+    const id = req.params.article_id;
+
+    const numberofValues = Object.values(articleToUpdate).filter(Boolean).length;
+    if(numberofValues === 0) {
+      return res.status(400).json({error: {message: 'Request body must contain either \'title\', \'style\' or \'content\''}});
+    }
+
+    ArticlesService.updateArticle(db,id,articleToUpdate)
+      .then(numRowsAffected => {
+        return res.status(204).end();
       })
       .catch(next);
   });
