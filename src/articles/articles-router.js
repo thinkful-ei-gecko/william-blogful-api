@@ -35,7 +35,7 @@ articlesRouter
 
     ArticlesService.insertArticle(db,newArticle)
       .then(article => {
-        res.status(201).location(path.posix.join(req.originalUrl + `/${article.id}`)).json({
+        res.status(201).location(path.posix.join(req.originalUrl, `/${article.id}`)).json({
           id: article.id,
           title: xss(article.title),
           style: article.style,
