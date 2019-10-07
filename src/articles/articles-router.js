@@ -23,7 +23,7 @@ articlesRouter
       .catch(next); // we are passing NEXT into the .catch so that any errors get handled by our error handler middleware
   })
   .post(jsonParser, (req,res,next) => {
-    const { title, content, style } = req.body;
+    const { title, content, style, author } = req.body;
     const newArticle = { title, content, style };
     const db = req.app.get('db');
 
@@ -32,6 +32,7 @@ articlesRouter
         return res.status(400).json({error: {message: `Missing ${key} in request body`}});
       }
     }
+    newArticle.author = author;
 
     ArticlesService.insertArticle(db,newArticle)
       .then(article => {
@@ -40,7 +41,8 @@ articlesRouter
           title: xss(article.title),
           style: article.style,
           content: xss(article.content),
-          date_published: new Date(article.date_published)
+          date_published: new Date(article.date_published),
+          author: xss(article.author)
         });
       })
       .catch(next);
